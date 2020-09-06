@@ -1,12 +1,15 @@
 use async_std::fs;
 use async_std::task;
 use clap::{App, AppSettings, Arg};
+use futures::stream::{FuturesUnordered, StreamExt};
 use indoc::indoc;
 use rayon::prelude::*;
 use rustywind::options::{Options, WriteMode};
 use std::path::Path;
+use std::path::PathBuf;
 
-fn main() {
+#[async_std::main]
+async fn main() {
     let matches = App::new("RustyWind")
         .version(clap::crate_version!())
         .setting(AppSettings::ArgRequiredElseHelp)
@@ -63,14 +66,16 @@ fn main() {
             "\nprinting file contents to console, run with --write to save changes to files:"
         ),
     }
-
     options
         .search_paths
         .par_iter()
-        .for_each(|file_path| task::block_on(run_on_file_paths(&file_path, &options)))
+        .map(|&file_path| async {
+            run_on_file_paths(&file_path, &options).await;
+        })
+        .collect::<Vec<_>>()
 }
 
-async fn run_on_file_paths(file_path: &Path, options: &Options) {
+async fn run_on_file_paths(file_path: Path, options: &Options) {
     match fs::read_to_string(file_path).await {
         Ok(contents) => {
             if rustywind::has_classes(&contents) {
