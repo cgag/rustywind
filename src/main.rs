@@ -1,8 +1,9 @@
+use async_std::fs;
+use async_std::task;
 use clap::{App, AppSettings, Arg};
 use indoc::indoc;
 use rayon::prelude::*;
 use rustywind::options::{Options, WriteMode};
-use std::fs;
 use std::path::Path;
 
 fn main() {
@@ -66,18 +67,18 @@ fn main() {
     options
         .search_paths
         .par_iter()
-        .for_each(|file_path| run_on_file_paths(&file_path, &options))
+        .for_each(|file_path| task::block_on(run_on_file_paths(&file_path, &options)))
 }
 
-fn run_on_file_paths(file_path: &Path, options: &Options) {
-    match fs::read_to_string(file_path) {
+async fn run_on_file_paths(file_path: &Path, options: &Options) {
+    match fs::read_to_string(file_path).await {
         Ok(contents) => {
             if rustywind::has_classes(&contents) {
                 let sorted_content = rustywind::sort_file_contents(contents, options);
 
                 match &options.write_mode {
                     WriteMode::DryRun => print_file_name(file_path, options),
-                    WriteMode::ToFile => write_to_file(file_path, &sorted_content, options),
+                    WriteMode::ToFile => write_to_file(file_path, &sorted_content, options).await,
                     WriteMode::ToConsole => print_file_contents(&sorted_content),
                 }
             }
@@ -86,8 +87,8 @@ fn run_on_file_paths(file_path: &Path, options: &Options) {
     }
 }
 
-fn write_to_file(file_path: &Path, sorted_contents: &str, options: &Options) {
-    match fs::write(file_path, sorted_contents.as_bytes()) {
+async fn write_to_file(file_path: &Path, sorted_contents: &str, options: &Options) {
+    match fs::write(file_path, sorted_contents.as_bytes()).await {
         Ok(_) => print_file_name(file_path, options),
         Err(err) => {
             eprintln!("\nError: {:?}", err);
