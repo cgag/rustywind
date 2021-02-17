@@ -20,7 +20,7 @@ fn default_options_for_test() -> Options {
 fn test_sort_file_contents() {
     let file_contents = r#"
     <div>
-        <div class='absolute relative flex inline-block inline random-class justify-items another-random-class'>
+        <div class='lg:inline-block absolute xs:relative lg:flex xs:inline sm:random-class justify-items another-random-class'>
             <ul class='flex items-center md:pr-4 lg:pr-6'>
         </div>
     </div>
@@ -28,7 +28,7 @@ fn test_sort_file_contents() {
 
     let expected_outcome = r#"
     <div>
-        <div class='inline-block inline flex absolute relative random-class justify-items another-random-class'>
+        <div class='absolute xs:inline xs:relative lg:inline-block lg:flex sm:random-class justify-items another-random-class'>
             <ul class='flex items-center md:pr-4 lg:pr-6'>
         </div>
     </div>
