@@ -4967,15 +4967,18 @@ lazy_static! {
         .map(|x| String::from(x))
         .collect();
 
-        let valid_prefixes = vec!["xs", "sm", "md", "lg", "xl", "2xl"];
-        for prefix in valid_prefixes {
-            let cloned_classes = classes.clone();
-            let with_prefixes = cloned_classes
-                .iter()
-                .map(|k| String::from(prefix) + ":" + &k);
-
-            classes.extend(with_prefixes);
+        // variants first because they should be treated like un-prefixed
+        let prefixes = vec![
+            "hover", "focus", "active", "group-hover", "group-focus", "focus-within", "focus-visible",
+            "motion-safe", "motion-reduce", "disabled", "visited", "checked", "first", "last", "odd", "even",
+            "xs", "sm", "md", "lg", "xl", "2xl"];
+        let mut new_entries = vec![];
+        for prefix in prefixes {
+            for c in &classes {
+                new_entries.push(String::from(prefix) + ":" + &c)
+            }
         }
+        classes.extend(new_entries);
 
         classes
             .into_iter()
