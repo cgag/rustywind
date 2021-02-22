@@ -4972,7 +4972,7 @@ lazy_static! {
             "hover", "focus", "active", "group-hover", "group-focus", "focus-within", "focus-visible",
             "motion-safe", "motion-reduce", "disabled", "visited", "checked", "first", "last", "odd", "even",
             "xs", "sm", "md", "lg", "xl", "2xl"];
-        let mut new_entries = vec![];
+        let mut new_entries = Vec::with_capacity(classes.len() + (prefixes.len() + 1));
         for prefix in prefixes {
             for c in &classes {
                 new_entries.push(String::from(prefix) + ":" + &c)
